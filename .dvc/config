@@ -1,0 +1,4 @@
+[core]
+    remote = localremote
+['remote "localremote"']
+    url = C:\Users\DLP-I5~1\AppData\Local\Temp\dvc-store
