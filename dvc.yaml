@@ -1,0 +1,12 @@
+stages:
+  train:
+    cmd: python model_training.py
+    deps:
+      - model_training.py
+      - data_raw/bank-additional.csv
+    outs:
+      - model.pkl
+      - columns_info.json
+    metrics:
+      - model_metadata.json:
+          cache: false

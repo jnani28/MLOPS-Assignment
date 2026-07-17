@@ -53,7 +53,7 @@ print("All libraries imported successfully!")"""))
 
 # ===== DATA LOADING =====
 cells.append(make_md_cell("## 2. Data Loading"))
-cells.append(make_code_cell("""df = pd.read_csv("bank-additional.csv")
+cells.append(make_code_cell("""df = pd.read_csv("data_raw/bank-additional.csv")
 print(f"Dataset shape: {df.shape}")
 print(f"\\nColumns: {list(df.columns)}")
 df.head()"""))

@@ -30,7 +30,7 @@ print("=" * 60)
 print("STEP 1: DATA LOADING")
 print("=" * 60)
 
-df = pd.read_csv("bank-additional.csv")
+df = pd.read_csv("data_raw/bank-additional.csv")
 print(f"Dataset shape: {df.shape}")
 print(f"Columns: {list(df.columns)}")
 print(f"\nFirst 5 rows:")
