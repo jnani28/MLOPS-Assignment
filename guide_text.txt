@@ -1,0 +1,606 @@
+﻿MLOps Installation Guide
+Windows & macOS ΓÇö One Unified Setup
+From a blank machine to a full, working open-source ML stack
+Install in order  ΓÇó  Every step has Windows + macOS  ΓÇó  Verify after each  ΓÇó  Optional tools are marked
+
+Contents
+How to Read This Guide  ┬╖  Golden Rules  ┬╖  System Requirements & Order
+Section 1 ΓÇö Foundations (one-time installs)
+Python ┬╖ Git ┬╖ uv ┬╖ VS Code & extensions ┬╖ Cursor ┬╖ Node.js
+Section 2 ΓÇö Project Setup
+Folder & venv ┬╖ .gitignore / .env ┬╖ core packages ┬╖ Git ┬╖ GitHub SSH
+Section 3 ΓÇö Data Versioning & Experiment Tracking
+DVC (init ΓåÆ remote ΓåÆ pipeline) ┬╖ MLflow (UI + tracking server)
+Section 4 ΓÇö Serving & Testing
+FastAPI ┬╖ pytest + python-dotenv ┬╖ gitleaks
+Section 5 ΓÇö Data Quality, Lineage & Features (optional)
+Great Expectations ┬╖ OpenLineage + Marquez ┬╖ Feast
+Section 6 ΓÇö Containers & Orchestration (optional)
+Docker ┬╖ Kubernetes (minikube) ┬╖ CI/CD (GitHub Actions + Argo)
+Section 7 ΓÇö Monitoring & LLM Testing
+Evidently ┬╖ Prometheus + Grafana ┬╖ Promptfoo
+Verification Checklist  ┬╖  Daily Start-Up  ┬╖  Common Errors & Fixes
+
+How to Read This Guide
+This is one continuous guide for both operating systems. Wherever commands differ, you will see a Windows (PowerShell) block and a macOS (Terminal) block ΓÇö run only the one for your machine. Where they are identical, you will see a single ΓÇ£Windows & macOSΓÇ¥ block.
+Conventions
+Windows (PowerShell) / macOS (Terminal): run only your platform's block. Windows users: open PowerShell as Administrator.
+Γ£ô Verify: a green block after each install ΓÇö run it and confirm the expected output before moving on.
+If it fails: a red box with the most common cause and its fix.
+ΓÇö optional / ΓÇö recommended next to a tool name tells you whether you can skip it. A blue ΓÇ£When you need itΓÇ¥ box explains who needs it.
+With uv (purple): every Python install also shows a faster uv equivalent. uv is optional; the pip command above it always works.
+REOPEN YOUR TERMINAL  After installing any command-line tool (Python, Git, Node, uv, kubectl, ...), close and reopen the terminal so the updated PATH takes effect. If a freshly installed command says ΓÇ£not foundΓÇ¥, this is almost always why.
+Golden Rules
+1. Install packages with  python -m pip install ...  (or uv pip install ...), never bare "pip".
+2. Activate your virtual environment BEFORE installing or running anything.
+3. Work inside your home folder  (Windows: C:\Users\You    macOS: ~)  - never a system folder.
+4. Never build CSV/data files with echo - always use Python (echo injects hidden characters).
+5. Paths differ: Windows uses backslash \ , macOS uses forward slash / . Do not mix them.
+6. One new terminal = re-activate the venv. The (.venv) prefix must show in your prompt.
+System Requirements
+Install Order (dependencies first)
+
+Section 1 ΓÇö Foundations (one-time installs)
+These tools are installed once per machine and shared by every project. Do them in order.
+1.1  Python 3.12   ΓÇö required
+The interpreter everything else runs on. 3.10ΓÇô3.12 are all fine; 3.12 is recommended.
+Windows (PowerShell)
+winget install Python.Python.3.12
+# IMPORTANT: if you use the python.org installer instead,
+# tick "Add python.exe to PATH" on the first screen.
+macOS (Terminal)
+brew install [email protected]
+# Or download from python.org (the .pkg adds itself to PATH automatically)
+Γ£ô Verify
+# Windows
+python --version          # Python 3.12.x
+python -m pip --version   # pip 2x.x (python 3.12)
+# macOS  (note: python3 / pip3)
+python3 --version         # Python 3.12.x
+python3 -m pip --version  # pip 2x.x (python 3.12)
+If it fails  Windows: ΓÇ£python is not recognizedΓÇ¥ ΓåÆ reopen PowerShell; if it still fails, reinstall and tick ΓÇ£Add to PATHΓÇ¥. macOS: if python points to old 2.7, always use python3. If python and pip report different versions, always call pip as python -m pip.
+1.2  Git   ΓÇö required
+Windows (PowerShell)
+winget install Git.Git
+# On the installer screens, accept defaults (Git Bash is useful to have)
+macOS (Terminal)
+brew install git
+# macOS already ships an older git; brew gives you the current one
+Set your identity once (used on every commit):
+Windows & macOS (same)
+git config --global user.name "Your Name"
+git config --global user.email "[email protected]"
+Γ£ô Verify
+git --version             # git version 2.4x.x
+If it fails  ΓÇ£git not recognized/foundΓÇ¥ ΓåÆ reopen the terminal. On Windows you can also just use the bundled ΓÇ£Git BashΓÇ¥ app.
+1.3  uv ΓÇö fast installer   ΓÇö optional, recommended
+When you need it  uv is a single tool that replaces python -m venv and pip and is dramatically faster. Every Python install below shows a ΓÇ£With uvΓÇ¥ alternative. You can skip uv entirely and use the plain pip/venv commands ΓÇö they always work.
+Windows (PowerShell)
+winget install astral-sh.uv
+# Or, without winget:
+# powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+macOS (Terminal)
+brew install uv
+# Or, without Homebrew:
+# curl -LsSf https://astral.sh/uv/install.sh | sh
+Either OS, if you already have Python/pip:
+Windows & macOS (same)
+pip install uv      # or: pipx install uv
+Γ£ô Verify
+uv --version              # e.g. uv 0.11.x
+How it maps to the plain commands:
+If it fails  ΓÇ£uv not foundΓÇ¥ ΓåÆ reopen the terminal, or install it with pip install uv.
+1.4  VS Code + extensions   ΓÇö required (editor)
+Windows (PowerShell)
+winget install Microsoft.VisualStudioCode
+macOS (Terminal)
+brew install --cask visual-studio-code
+Install the editor extensions. Only the first two are required for ML work; the rest are convenience and can be added later when the relevant step needs them:
+Required (2)
+Windows & macOS (same)
+code --install-extension ms-python.python      # Python language support + debugging
+code --install-extension ms-toolsai.jupyter    # run .ipynb notebooks in the editor
+Optional ΓÇö install when a later step needs it
+Windows & macOS (same)
+code --install-extension ms-python.black-formatter   # auto-format on save (Section 2)
+code --install-extension ms-azuretools.vscode-docker # Docker sidebar (Section 6)
+code --install-extension iterative.dvc               # DVC pipeline view (Section 3)
+code --install-extension eamodio.gitlens             # inline git history (any time)
+code --install-extension GitHub.copilot              # AI autocomplete (paid; GitHub login)
+ABOUT ms-python.pylance  You do not need to install Pylance separately ΓÇö it ships bundled with ms-python.python. Installing it on its own is harmless but redundant, so it is left out above.
+Γ£ô Verify
+code --version            # prints version on the first line
+code --list-extensions    # ms-python.python and ms-toolsai.jupyter should appear
+If it fails  ΓÇ£code is not recognizedΓÇ¥ ΓåÆ macOS: open VS Code, press Cmd+Shift+P, run ΓÇ£Shell Command: Install 'code' command in PATHΓÇ¥. Windows: reopen the terminal after install.
+1.5  Cursor (AI editor)   ΓÇö optional
+When you need it  Cursor is an AI-native editor built on VS Code. It is optional ΓÇö plain VS Code is enough for this whole guide. All VS Code extensions also work in Cursor.
+Windows (PowerShell)
+winget install Anysphere.Cursor
+macOS (Terminal)
+brew install --cask cursor
+1.6  Node.js 22 LTS   ΓÇö optional
+When you need it  Node.js is only needed for Promptfoo (LLM prompt testing, Section 7). Skip it unless your pipeline uses LLMs.
+Windows (PowerShell)
+winget install OpenJS.NodeJS.LTS
+macOS (Terminal)
+brew install node@22
+echo 'export PATH="/opt/homebrew/opt/node@22/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+Γ£ô Verify
+node --version            # v22.x.x
+npm --version             # 10.x.x or higher
+
+Section 2 ΓÇö Project Setup
+Create the project, its isolated environment, and version control. Repeat per project.
+2.1  Create the project folder   ΓÇö required
+Windows (PowerShell)
+cd $HOME                 # your user folder, e.g. C:\Users\You
+mkdir mlops-project
+cd mlops-project
+mkdir data, data\raw, data\processed, models, src, reports
+macOS (Terminal)
+cd ~                     # your home folder
+mkdir mlops-project
+cd mlops-project
+mkdir -p data/raw data/processed models src reports
+Γ£ô Verify
+# You should now be inside the project; list the folders:
+# Windows: dir        macOS: ls
+# -> data  models  reports  src
+2.2  Virtual environment (venv)   ΓÇö required
+An isolated Python environment so this project's packages never clash with another's.
+Windows (PowerShell)
+python -m venv .venv
+.venv\Scripts\activate
+# prompt should now start with (.venv)
+macOS (Terminal)
+python3 -m venv .venv
+source .venv/bin/activate
+# prompt should now start with (.venv)
+With uv (faster equivalent):
+uv venv
+# then activate exactly as above for your OS
+Γ£ô Verify
+# The prompt must show (.venv). Confirm the interpreter is the project one:
+python -c "import sys; print(sys.prefix)"
+# -> ...\mlops-project\.venv   (Windows)   or   .../mlops-project/.venv  (macOS)
+If it fails  Windows PowerShell blocks activation with ΓÇ£running scripts is disabledΓÇ¥ ΓåÆ run once: Set-ExecutionPolicy -Scope CurrentUser RemoteSigned, then re-run .venv\Scripts\Activate.ps1. macOS ΓÇ£permission deniedΓÇ¥ ΓåÆ use source .venv/bin/activate (not ./). If (.venv) is missing, packages will install globally ΓÇö always activate first.
+ACTIVATE BEFORE YOU INSTALL  The most common silent mistake: creating the venv but installing packages without activating it. No error appears, but packages land in the global Python and imports fail later. Always confirm the (.venv) prefix first.
+2.3  .gitignore and .env   ΓÇö required
+Create a file named .gitignore in the project root with this content (use the editor ΓÇö do not use echo):
+.venv/                # virtual environment - never commit
+__pycache__/
+*.pyc
+.env                  # secrets - never commit
+data/raw/             # large data -> use DVC instead
+data/processed/
+mlruns/               # MLflow local data
+.ipynb_checkpoints/
+.DS_Store             # macOS metadata
+Thumbs.db             # Windows metadata
+And a .env file for secrets (loaded at runtime by python-dotenv, Section 4):
+MLFLOW_TRACKING_URI=http://localhost:5000
+AWS_ACCESS_KEY_ID=your_key_here
+AWS_SECRET_ACCESS_KEY=your_secret_here
+NEVER COMMIT .env  Confirm .env is listed in .gitignore before your first commit. It holds live credentials.
+2.4  Install the core packages   ΓÇö required
+With the venv active, install the core stack in one command:
+Windows & macOS (same)
+python -m pip install dvc mlflow fastapi uvicorn evidently scikit-learn optuna pandas numpy
+python -m pip install great-expectations    # installed separately (many dependencies)
+With uv (faster equivalent):
+uv pip install dvc mlflow fastapi uvicorn evidently scikit-learn optuna pandas numpy
+uv pip install great-expectations
+Save the exact versions so the project is reproducible:
+Windows & macOS (same)
+python -m pip freeze > requirements.txt
+With uv (faster equivalent):
+uv pip freeze > requirements.txt
+Γ£ô Verify
+python -c "import dvc, mlflow, fastapi, evidently, sklearn, optuna, pandas, numpy, great_expectations; print('ALL OK')"
+# -> ALL OK
+If it fails  ModuleNotFoundError ΓåÆ the venv is not active (re-activate it). ΓÇ£great_expectations not foundΓÇ¥ on install ΓåÆ the install name uses a hyphen (great-expectations) but the import name uses an underscore (great_expectations). pip version mismatch ΓåÆ always install via python -m pip.
+2.5  Initialise Git   ΓÇö required
+Windows & macOS (same)
+git init
+git add .
+git commit -m "Initial project structure"
+2.6  GitHub SSH key   ΓÇö optional, recommended
+When you need it  SSH gives passwordless git push/pull. Without it you must paste a token on every push. Set up once, works forever. Skip if you only work locally.
+Generate the key (same command both OSes ΓÇö use Git Bash on Windows or Terminal on macOS):
+ssh-keygen -t ed25519 -C "[email protected]"
+# Press Enter at every prompt (default path, no passphrase).
+# Creates ~/.ssh/id_ed25519 (PRIVATE - never share) and id_ed25519.pub (PUBLIC).
+Copy the PUBLIC key:
+Windows (PowerShell)
+Get-Content ~/.ssh/id_ed25519.pub | Set-Clipboard
+# (Git Bash: cat ~/.ssh/id_ed25519.pub  then copy the output)
+macOS (Terminal)
+pbcopy < ~/.ssh/id_ed25519.pub
+# the key is now on your clipboard
+On github.com: profile ΓåÆ Settings ΓåÆ SSH and GPG keys ΓåÆ New SSH key ΓåÆ paste ΓåÆ Add.
+Γ£ô Verify
+ssh -T [email protected]
+# First time: type "yes". Success:
+# "Hi <user>! You've successfully authenticated, but GitHub does not provide shell access."
+If it fails  ΓÇ£Permission denied (publickey)ΓÇ¥ ΓåÆ you pasted the private key; re-copy the file ending in .pub. ΓÇ£Key already in useΓÇ¥ ΓåÆ the key is attached to another account; generate a new one with a different filename.
+
+Section 3 ΓÇö Data Versioning & Experiment Tracking
+3.1  DVC ΓÇö data version control   ΓÇö required
+DVC versions large data/models with Git (Git stores a tiny pointer; the data lives in DVC storage). Run with the venv active; DVC was installed in 2.4. For cloud storage add an extra:
+Windows & macOS (same)
+# Optional cloud support (pick one): S3 / Azure / GCS / all
+python -m pip install "dvc[s3]"
+With uv (faster equivalent):
+uv pip install "dvc[s3]"   # azure: "dvc[azure]"   gcs: "dvc[gs]"   all: "dvc[all]"
+Initialise DVC, then track a dataset:
+Windows & macOS (same)
+dvc init
+git commit -m "Initialise DVC"
+ 
+# put a CSV in data/raw/ then:
+dvc add data/raw/customers.csv          # creates customers.csv.dvc (a pointer)
+git add data/raw/customers.csv.dvc .gitignore
+git commit -m "Track dataset v1 with DVC"
+Add remote storage and push (use a local folder if you have no cloud yet):
+Windows (PowerShell)
+dvc remote add -d localremote $env:TEMP\dvc-store
+dvc push
+macOS (Terminal)
+dvc remote add -d localremote /tmp/dvc-store
+dvc push
+Define a reproducible pipeline in a file named dvc.yaml:
+stages:
+  prepare:
+    cmd: python src/data_prep.py
+    deps: [src/data_prep.py, data/raw/customers.csv]
+    outs: [data/processed/clean.csv]
+  train:
+    cmd: python src/train.py
+    deps: [src/train.py, data/processed/clean.csv]
+    outs: [models/model.pkl]
+    metrics: [metrics.json]
+Windows & macOS (same)
+dvc repro      # runs only the stages whose inputs changed
+dvc dag        # shows the pipeline as a diagram
+Γ£ô Verify
+dvc --version             # 3.x.x
+dvc status                # "Data and pipelines are up to date." or a change list
+If it fails  ΓÇ£dvc not foundΓÇ¥ ΓåÆ venv not active. A teammate clones the repo and the CSV is missing ΓåÆ that is expected: Git only stores the pointer; they run dvc pull to fetch the data.
+3.2  MLflow ΓÇö experiment tracking   ΓÇö required
+MLflow records every training run's parameters, metrics and model. Two ways to run it ΓÇö a quick UI for a demo, or a tracking server backed by a database for real projects.
+Option A ΓÇö Quick UI (good for the demo)
+Windows & macOS (same)
+# from the project root, keep this terminal tab open:
+mlflow ui                 # serves http://localhost:5000
+Option B ΓÇö Tracking server (production)
+Windows (PowerShell)
+# PowerShell - keep on ONE line (no backslashes):
+mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlartifacts --host 0.0.0.0 --port 5000
+macOS (Terminal)
+mlflow server \
+  --backend-store-uri sqlite:///mlflow.db \
+  --default-artifact-root ./mlartifacts \
+  --host 0.0.0.0 --port 5000
+Create src/train.py (this exact script is tested and runs end-to-end):
+import mlflow, mlflow.sklearn
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+ 
+df = pd.read_csv("data/raw/customers.csv")
+X = df[["age", "salary"]]
+y = df["churn"]
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+ 
+mlflow.set_experiment("churn-prediction")
+with mlflow.start_run():
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+    acc = accuracy_score(y_test, model.predict(X_test))
+    mlflow.log_param("n_estimators", 100)
+    mlflow.log_metric("accuracy", acc)
+    mlflow.sklearn.log_model(model, "model")
+    print(f"Accuracy: {acc}")
+Run it (in a second terminal tab, venv active), then open the UI:
+Windows (PowerShell)
+python src\train.py
+macOS (Terminal)
+python src/train.py
+ABOUT THE ACCURACY  On a tiny demo CSV the printed accuracy may be 0.5 or 1.0 ΓÇö both are normal (the test split is only a couple of rows). What matters is that the run logs to MLflow without errors and appears in the UI.
+Γ£ô Verify
+mlflow --version          # mlflow, version 3.x.x
+# Then open http://localhost:5000 -> the "churn-prediction" experiment lists your run.
+If it fails  ΓÇ£Port 5000 already in useΓÇ¥ ΓåÆ add --port 5001 (and use that port in the browser). No run appears ΓåÆ make sure train.py ran in a terminal where the venv is active.
+
+Section 4 ΓÇö Serving & Testing
+4.1  FastAPI ΓÇö serve the model   ΓÇö required
+Create src/serve.py (tested; both endpoints respond correctly):
+from fastapi import FastAPI
+from pydantic import BaseModel
+ 
+app = FastAPI(title="Churn Prediction API", version="1.0")
+ 
+class Customer(BaseModel):
+    age: int
+    salary: float
+ 
+@app.get("/")
+def home():
+    return {"status": "API is running", "model": "churn-v1"}
+ 
+@app.post("/predict")
+def predict(c: Customer):
+    churn = 1 if c.age > 45 and c.salary < 55000 else 0
+    return {"churn_prediction": churn, "risk": "HIGH" if churn else "LOW"}
+Start the server (venv active):
+Windows & macOS (same)
+uvicorn src.serve:app --reload      # serves http://localhost:8000
+Γ£ô Verify
+# Open these in a browser:
+#   http://localhost:8000        -> {"status":"API is running","model":"churn-v1"}
+#   http://localhost:8000/docs   -> Swagger UI; try POST /predict with {"age":50,"salary":40000}
+If it fails  ΓÇ£uvicorn not foundΓÇ¥ ΓåÆ venv not active. ΓÇ£Port 8000 in useΓÇ¥ ΓåÆ uvicorn src.serve:app --reload --port 8001. 422 error on /predict ΓåÆ send JSON with integer age and numeric salary.
+4.2  pytest + python-dotenv   ΓÇö required
+Windows & macOS (same)
+python -m pip install pytest pytest-cov python-dotenv
+With uv (faster equivalent):
+uv pip install pytest pytest-cov python-dotenv
+A minimal test in tests/test_basic.py:
+import pandas as pd
+ 
+def test_dataframe_dropna_removes_nulls():
+    df = pd.DataFrame({"a": [1, None, 3]})
+    assert df.dropna().isnull().sum().sum() == 0
+Windows & macOS (same)
+pytest -v                     # run tests
+pytest --cov=src              # with coverage (aim for >= 70% before production)
+Γ£ô Verify
+pytest --version          # pytest 8.x.x
+python -c "from dotenv import load_dotenv; print('dotenv OK')"
+If it fails  ΓÇ£ImportError: no module named srcΓÇ¥ during tests ΓåÆ run pytest from the project root, and add an empty src/__init__.py if needed.
+4.3  gitleaks ΓÇö secret scanner   ΓÇö optional, recommended
+When you need it  gitleaks scans your whole git history for accidentally committed secrets (API keys, passwords). Recommended for any repo you push to GitHub.
+Windows (PowerShell)
+winget install gitleaks.gitleaks
+# (or download the .zip from github.com/gitleaks/gitleaks/releases and put gitleaks.exe on PATH)
+macOS (Terminal)
+brew install gitleaks
+Windows & macOS (same)
+gitleaks detect --source . -v      # clean result: "leaks found: 0"
+Γ£ô Verify
+gitleaks version          # 8.x.x
+If it fails  Deleting a leaked key from the latest file does NOT clear it ΓÇö gitleaks scans history. You must rewrite history (e.g. the BFG tool) and force-push, then rotate the key.
+
+Section 5 ΓÇö Data Quality, Lineage & Features (optional / advanced)
+When you need it  These tools harden a pipeline for production. They are optional for a basic demo ΓÇö add them when you need data validation, lineage tracking, or a feature store.
+5.1  Great Expectations (GX 1.x)   ΓÇö optional
+Validates data against rules before it flows downstream. Installed in 2.4. The script below is tested against GX 1.x (the current API; note it is a full rewrite of the old 0.18 series):
+import great_expectations as gx
+ 
+context = gx.get_context(mode="ephemeral")
+ds = context.data_sources.add_pandas_filesystem(
+    name="local_csv", base_directory="data/raw/")
+asset = ds.add_csv_asset(name="customers")
+# CSV file asset -> identify the batch by file path:
+batch_def = asset.add_batch_definition_path(
+    name="customers_batch", path="customers.csv")
+ 
+suite = context.suites.add(gx.ExpectationSuite(name="customers_suite"))
+suite.add_expectation(
+    gx.expectations.ExpectColumnValuesToNotBeNull(column="customer_id"))
+suite.add_expectation(
+    gx.expectations.ExpectColumnValuesToBeBetween(
+        column="age", min_value=18, max_value=100))
+ 
+val_def = context.validation_definitions.add(
+    gx.ValidationDefinition(
+        name="customers_check", data=batch_def, suite=suite))
+result = val_def.run()
+print(f"Passed: {result.success}")        # True / False
+Γ£ô Verify
+python -c "import great_expectations as gx; print(gx.__version__)"   # 1.x (e.g. 1.18.x)
+If it fails  AttributeError on add_batch_definition_* ΓåÆ you are mixing the old 0.18 API; use add_batch_definition_path for a CSV file asset as shown.
+5.2  OpenLineage + Marquez   ΓÇö optional
+When you need it  Records what each pipeline stage read and wrote (data lineage). Marquez runs as a Docker container, so install Docker (Section 6.1) first.
+Windows & macOS (same)
+python -m pip install openlineage-python
+With uv (faster equivalent):
+uv pip install openlineage-python
+Windows & macOS (same)
+# Docker must be running:
+docker run -d --name marquez -p 5001:5000 -p 3000:3000 marquezproject/marquez
+#   port 5001 = REST API   port 3000 = web UI
+Γ£ô Verify
+docker ps | grep marquez  # container shows as running
+# then open http://localhost:3000
+5.3  Feast ΓÇö feature store   ΓÇö optional
+When you need it  Feast serves the same feature definitions at training time and serving time, removing training/serving skew. Add it only if you maintain reusable features across models.
+Windows & macOS (same)
+python -m pip install feast
+With uv (faster equivalent):
+uv pip install feast
+Windows & macOS (same)
+feast init my_feature_store
+cd my_feature_store/feature_repo
+feast apply               # registers feature definitions
+Γ£ô Verify
+feast version                 # feast 0.4x.x
+feast feature-views list      # lists the example feature views
+If it fails  ΓÇ£feast not foundΓÇ¥ ΓåÆ venv not active. On Apple Silicon, if a dependency fails to build, upgrade pip first (python -m pip install --upgrade pip) then reinstall.
+
+Section 6 ΓÇö Containers & Orchestration (optional / advanced)
+When you need it  Package and run your model anywhere. Optional for a laptop demo ΓÇö needed when you deploy. Docker is the prerequisite for everything in this section.
+6.1  Docker Desktop   ΓÇö optional
+Windows (PowerShell)
+# 1) enable WSL2 (required), then RESTART the computer:
+wsl --install
+# 2) install Docker Desktop, then launch it from the Start Menu:
+winget install Docker.DockerDesktop
+macOS (Terminal)
+brew install --cask docker
+# then open Docker Desktop from Applications once
+Wait for the whale icon to stop animating before running docker commands. A minimal Dockerfile (named exactly ΓÇ£DockerfileΓÇ¥):
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY src/ ./src/
+EXPOSE 8000
+CMD ["uvicorn", "src.serve:app", "--host", "0.0.0.0", "--port", "8000"]
+Windows & macOS (same)
+docker build -t my-ml-model:v1 .
+docker run -p 8000:8000 my-ml-model:v1
+Γ£ô Verify
+docker --version          # Docker version 2x.x
+docker run hello-world    # prints "Hello from Docker!"
+If it fails  ΓÇ£Cannot connect to the Docker daemonΓÇ¥ / ΓÇ£daemon not runningΓÇ¥ ΓåÆ open Docker Desktop and wait for the whale icon to settle. Windows: if WSL2 errors, run wsl --update then restart.
+6.2  Kubernetes (minikube + kubectl)   ΓÇö optional
+When you need it  minikube runs a real Kubernetes cluster locally on top of Docker. Needed only if you are learning/deploying to Kubernetes.
+Windows (PowerShell)
+winget install Kubernetes.kubectl
+winget install Kubernetes.minikube
+macOS (Terminal)
+brew install kubectl
+brew install minikube
+Windows & macOS (same)
+# Docker must be running first:
+minikube start --driver=docker --cpus=4 --memory=8192
+Deploy your image (note: minikube has its own image registry):
+Windows & macOS (same)
+minikube image load my-ml-model:v1
+kubectl create deployment fraud-model --image=my-ml-model:v1 --replicas=3
+kubectl expose deployment fraud-model --port=8000 --type=NodePort
+minikube service fraud-model
+Γ£ô Verify
+kubectl get nodes         # minikube  Ready  control-plane
+kubectl get pods          # 3 fraud-model pods, all "Running"
+If it fails  Pods stuck on ErrImagePull ΓåÆ the #1 mistake: run minikube image load my-ml-model:v1 before deploying (minikube cannot see your host's images). Node ΓÇ£NotReadyΓÇ¥ ΓåÆ wait 60s and re-check.
+6.3  CI/CD ΓÇö GitHub Actions + Argo   ΓÇö optional
+When you need it  Automate testing, training and deployment on every push. GitHub Actions needs no install (just a YAML file in your repo); Argo installs into minikube.
+Create .github/workflows/ml-ci.yml (runs on GitHub's servers):
+name: ML CI Pipeline
+on:
+  push: {branches: [main]}
+  pull_request: {branches: [main]}
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v2
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run tests
+        run: pytest tests/ -v --cov=src
+Windows & macOS (same)
+git add .github/workflows/ml-ci.yml
+git commit -m "Add CI pipeline"
+git push origin main      # then watch the Actions tab on GitHub
+Argo Workflows (CD inside minikube), optional:
+Windows & macOS (same)
+kubectl create namespace argo
+kubectl apply -n argo -f https://github.com/argoproj/argo-workflows/releases/latest/download/install.yaml
+kubectl -n argo port-forward svc/argo-server 2746:2746   # keep this tab open; UI at https://localhost:2746
+Γ£ô Verify
+# GitHub -> repo -> Actions tab: the run shows a green tick when it passes.
+# Argo: all pods Running ->  kubectl get pods -n argo
+If it fails  Argo UI unreachable ΓåÆ the kubectl port-forward must stay running in its own terminal tab.
+
+Section 7 ΓÇö Monitoring & LLM Testing
+7.1  Evidently ΓÇö data drift   ΓÇö required for monitoring
+Detects when production data drifts away from training data. Installed in 2.4. This script is tested against the current Evidently 0.7.x API and produces an HTML report:
+import pandas as pd
+from evidently import Report, Dataset, DataDefinition
+from evidently.presets import DataDriftPreset
+from sklearn.datasets import load_iris
+ 
+df = load_iris(as_frame=True).data
+reference = df.iloc[:100]    # stands in for training data
+current = df.iloc[100:]      # stands in for new production data
+ 
+schema = DataDefinition(numerical_columns=list(df.columns))
+ref_ds = Dataset.from_pandas(reference, data_definition=schema)
+cur_ds = Dataset.from_pandas(current,   data_definition=schema)
+ 
+report = Report(metrics=[DataDriftPreset()])
+result = report.run(reference_data=ref_ds, current_data=cur_ds)
+result.save_html("drift_report.html")
+print("Saved drift_report.html")
+Γ£ô Verify
+python -c "import evidently; print(evidently.__version__)"   # 0.7.x
+# run the script, then open drift_report.html in a browser
+If it fails  ModuleNotFoundError: evidently.report ΓåÆ that is the OLD API; use the imports shown above (from evidently import Report, Dataset, DataDefinition / from evidently.presets import DataDriftPreset).
+7.2  Prometheus + Grafana   ΓÇö optional
+When you need it  Continuous metrics + dashboards. Optional; needs Docker. They run together via Docker Compose.
+Create docker-compose.yml:
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    ports: ["9090:9090"]
+    volumes: ["./prometheus.yml:/etc/prometheus/prometheus.yml"]
+  grafana:
+    image: grafana/grafana:latest
+    ports: ["3001:3000"]            # 3001 to avoid clashing with Marquez (3000)
+    environment: ["GF_SECURITY_ADMIN_PASSWORD=admin"]
+And prometheus.yml:
+global: {scrape_interval: 15s}
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs: [{targets: ['localhost:9090']}]
+Windows & macOS (same)
+docker compose up -d          # start
+docker compose down           # stop
+Γ£ô Verify
+docker compose ps             # prometheus + grafana both "running"
+# Prometheus: http://localhost:9090   Grafana: http://localhost:3001 (login admin / admin)
+If it fails  Grafana won't load on 3000 ΓåÆ it is mapped to 3001 here on purpose, because Marquez (5.2) uses 3000. Use http://localhost:3001.
+7.3  Promptfoo ΓÇö LLM prompt testing   ΓÇö optional
+When you need it  Only if your pipeline uses LLMs as components (e.g. GPT-4 extracting fields from text). Requires Node.js (Section 1.6).
+Windows & macOS (same)
+npm install -g promptfoo
+A minimal promptfooconfig.yaml:
+providers:
+  - id: openai:gpt-4o
+prompts:
+  - "Extract the name and amount from: {{text}}"
+tests:
+  - vars: {text: "John paid 5000 on Jan 12"}
+    assert:
+      - {type: contains, value: "John"}
+      - {type: contains, value: "5000"}
+Windows & macOS (same)
+promptfoo eval            # run the tests
+promptfoo view            # open the HTML results
+Γ£ô Verify
+promptfoo --version       # e.g. 0.5x.x
+If it fails  ΓÇ£promptfoo: command not foundΓÇ¥ ΓåÆ Node.js is not installed/on PATH (Section 1.6), or reopen the terminal after npm install -g.
+
+Verification Checklist (Windows & macOS)
+Run each command; every row should match. Use python on Windows and python3 on macOS where shown.
+Foundations & Project
+Core MLOps & Testing
+Optional / Advanced
+Daily Start-Up Routine
+Each morning, bring up only the pieces you are using, then activate the project venv:
+Windows (PowerShell)
+# (optional) Docker Desktop -> wait for the whale icon
+minikube start                     # if using Kubernetes
+mlflow ui                          # experiment UI on :5000
+docker compose up -d               # if using Prometheus + Grafana
+cd $HOME\mlops-project
+.venv\Scripts\activate
+macOS (Terminal)
+# (optional) open Docker Desktop -> wait for the whale icon
+minikube start                     # if using Kubernetes
+mlflow ui                          # experiment UI on :5000
+docker compose up -d               # if using Prometheus + Grafana
+cd ~/mlops-project
+source .venv/bin/activate
+Common Errors & Fixes
+SETUP COMPLETE  With these sections done, your full MLOps stack runs identically on Windows and macOS: editor, version control, data + experiment tracking, serving, testing, and ΓÇö where you opted in ΓÇö data quality, containers, orchestration, monitoring and LLM testing.

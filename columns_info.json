@@ -1,0 +1,123 @@
+{
+  "all_columns": [
+    "age",
+    "job",
+    "marital",
+    "education",
+    "default",
+    "housing",
+    "loan",
+    "contact",
+    "month",
+    "day_of_week",
+    "duration",
+    "campaign",
+    "pdays",
+    "previous",
+    "poutcome",
+    "emp.var.rate",
+    "cons.price.idx",
+    "cons.conf.idx",
+    "euribor3m",
+    "nr.employed"
+  ],
+  "numeric_features": [
+    "age",
+    "duration",
+    "campaign",
+    "pdays",
+    "previous",
+    "emp.var.rate",
+    "cons.price.idx",
+    "cons.conf.idx",
+    "euribor3m",
+    "nr.employed"
+  ],
+  "categorical_features": [
+    "job",
+    "marital",
+    "education",
+    "default",
+    "housing",
+    "loan",
+    "contact",
+    "month",
+    "day_of_week",
+    "poutcome"
+  ],
+  "categorical_values": {
+    "job": [
+      "blue-collar",
+      "services",
+      "admin.",
+      "entrepreneur",
+      "self-employed",
+      "technician",
+      "management",
+      "student",
+      "retired",
+      "housemaid",
+      "unemployed",
+      "unknown"
+    ],
+    "marital": [
+      "married",
+      "single",
+      "divorced",
+      "unknown"
+    ],
+    "education": [
+      "basic.9y",
+      "high.school",
+      "university.degree",
+      "professional.course",
+      "basic.6y",
+      "basic.4y",
+      "unknown",
+      "illiterate"
+    ],
+    "default": [
+      "no",
+      "unknown",
+      "yes"
+    ],
+    "housing": [
+      "yes",
+      "no",
+      "unknown"
+    ],
+    "loan": [
+      "no",
+      "unknown",
+      "yes"
+    ],
+    "contact": [
+      "cellular",
+      "telephone"
+    ],
+    "month": [
+      "may",
+      "jun",
+      "nov",
+      "sep",
+      "jul",
+      "aug",
+      "mar",
+      "oct",
+      "apr",
+      "dec"
+    ],
+    "day_of_week": [
+      "fri",
+      "wed",
+      "mon",
+      "thu",
+      "tue"
+    ],
+    "poutcome": [
+      "nonexistent",
+      "failure",
+      "success"
+    ]
+  }
+}

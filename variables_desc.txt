@@ -1,0 +1,67 @@
+﻿--- Page 1 ---
+ 
+B24-T2-CT1 Bank data set variables description.  
+ 
+As mentioned in the assignment document, the dataset is related to :   A leading bank 
+runs marketing campaigns (like phone calls, emails, or messages) to offer financial products 
+such as term deposits. However, reaching out to every potential client is expensive and time -
+consuming. Despite strong outreach, only a small percen tage of customers accept the offer.    
+ 
+Since the data is marketing campaign related, we need to interpret the variables in that regard. 
+Below is the brief description of the variables:  
+ 
+ 
+ΓÇó Age :  age of the client.  
+ΓÇó Job :   clientΓÇÖs job type.  
+ΓÇó marital: client's marital status.  
+ΓÇó Education:  client's highest level of education.  
+ΓÇó Default: Whether the client has defaulted on a previous loan.  
+ΓÇó Housing: Whether the client has a housing loan (mortgage).  
+ΓÇó Loan: Whether the client has a personal loan   
+ΓÇó contact:    method of contact used to reach the client.  
+ΓÇó month: The month when the client was last contacted. Used to see seasonal trends or 
+something like that.  
+ΓÇó day_of_week : The day of the week when the client was last contacted.  
+THis is same as above but used to see certain days may be more effective for contacting 
+clients (e.g., weekdays vs. weekends).  
+ΓÇó duration:  Duration of the last contact with the client, in seconds.  
+For example, may not always be true: Longer calls may indicate higher client 
+engagement.  
+ΓÇó day_of_week  : The day of the week  when  the client  was last contacted.  
+THis  is same  like above  but used  to see certain  days  may be more  effective  for 
+contacting  clients  (e.g.,  weekdays  vs. weekends).  
+ΓÇó Duration:   Duration  of the last contact  with the client,  in seconds.  
+Just to give you example  may not be correct  always  longer  call durations  may 
+indicate  higher  client  engagement  or interest  (Note  : May not be truer  always  ) 
+ΓÇó campaign:  Number  of contacts  performed  during  this campaign  for this client  
+(including  the current  contact).  
+ΓÇó Pdays  : Number  of days  that passed  by after  the client  was last contacted  from a 
+previous  campaign.  A value  of negative  one indicates  that the client  was not 
+previously  contacted.  Positive  values  indicate  how many  days  have  elapsed  
+since  the last contact.  
+ΓÇó Previous:  Number  of contacts  performed  before  this campaign  and for this client.  
+Indicates  how many  times  the client  has been  contacted  in prior  campaigns.  
+ΓÇó Postoutcome  : Outcome  of the previous  marketing  campaign.  
+ΓÇó emp.var.rate  : Employment  variation  rate ΓÇö the percentage  change  in the 
+number  of employed  individuals  in the country.   
+
+--- Page 2 ---
+NOTE  THIS  IS JUST  AN EXAMPLE:  you can think  like this A positive  value  
+indicates  job creation,  while  a negative  value  indicates  job losses.  
+ΓÇó cons.price.idx  : Consumer  price  index  (CPI)  ΓÇöIn economics  this is a  measure  of 
+the average  change  over time in the prices  paid by consumers  for a basket  of 
+goods  and services.  
+Higher  values  suggest  rising  prices,  which  can affect  purchasing  power  and 
+consumer  behavior.  
+ΓÇó cons.conf.idx  :  Consumer  Confidence  Index  (CCI)  :  is a crucial  metric  that 
+reflects  consumers'  perceptions  of the current  and future  economic  conditions.  
+Higher  values  indicates  that consumers  are optimistic,  which  may lead to 
+increased  spending  and economic  growth.   
+ΓÇó euribor3m  : Euro  Interbank  Offered  Rate  (Euribor)  for a 3-month  period.  
+Represents  the interest  rate at which  banks  lend to each  other  in the eurozone.  
+ΓÇó  nr.employed  : Number  of employees  ΓÇö the total employment  in the country.  
+ΓÇó Y is basically  target  variable  indicating  whether  the client  subscribed  to the term 
+deposit  (yes)  or not (no).  For this inly we are building  model.  
+ 
+ 
+

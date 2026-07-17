@@ -1,0 +1,32 @@
+{
+  "model_type": "RandomForestClassifier",
+  "features": [
+    "age",
+    "job",
+    "marital",
+    "education",
+    "default",
+    "housing",
+    "loan",
+    "contact",
+    "month",
+    "day_of_week",
+    "duration",
+    "campaign",
+    "pdays",
+    "previous",
+    "poutcome",
+    "emp.var.rate",
+    "cons.price.idx",
+    "cons.conf.idx",
+    "euribor3m",
+    "nr.employed"
+  ],
+  "metrics": {
+    "accuracy": 0.8896,
+    "precision": 0.4962,
+    "recall": 0.7222,
+    "f1_score": 0.5882,
+    "roc_auc": 0.9425
+  }
+}
