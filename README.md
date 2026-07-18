@@ -1,143 +1,433 @@
-# Bank Term Deposit Prediction - MLOps Assignment
+# 🏦 Bank Term Deposit Prediction - End-to-End MLOps Pipeline
 
-## Problem Summary
-A bank wants to target customers who are likely to subscribe to a term deposit.
-This project provides a full local MLOps workflow with data validation, model training,
-MLflow tracking, API serving, Docker packaging, and monitoring hooks.
+## Project Overview
 
-## Key Production Fixes Applied
-- Removed `duration` from training and inference to prevent feature leakage.
-- Added robust logging and startup checks in training, validation, and API.
-- Split API runtime dependencies from full project dependencies.
-- Added Prometheus-compatible metrics endpoint (`/metrics`).
-- Added Docker Compose stack for API + Prometheus + Grafana.
-- Added OpenLineage tracking wrapper script.
-- Added CI workflow for validation, training, API smoke test, and Docker build.
+This project predicts whether a bank customer will subscribe to a term deposit using Machine Learning while demonstrating a complete production-grade MLOps workflow.
 
-## Project Structure
-- `model_training.py`: Training pipeline + MLflow logging + artifact generation
-- `data_validation.py`: Great Expectations validation stage
-- `app.py`: FastAPI inference service (`/`, `/healthz`, `/predict`, `/metrics`)
-- `openlineage_tracking.py`: Optional training wrapper with OpenLineage events
-- `evidently_monitoring.py`: Data drift report generation
-- `dvc.yaml`: Reproducible validation and training stages
-- `Dockerfile`: API container image
-- `docker-compose.yml`: API + Prometheus + Grafana stack
-- `.github/workflows/ci.yml`: CI checks
-- `requirements.txt`: Full project dependencies
-- `requirements-api.txt`: Lean API runtime dependencies
+Instead of only training a model, this repository covers the complete lifecycle:
 
-## Local Setup
-```bash
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux/macOS
-source .venv/bin/activate
+- Data Validation
+- Feature Engineering
+- Model Training
+- Experiment Tracking (MLflow)
+- REST API Deployment (FastAPI)
+- Containerization (Docker)
+- Monitoring (Prometheus + Grafana)
+- Data Drift Detection (Evidently)
+- Data Lineage (OpenLineage)
+- CI/CD (GitHub Actions)
+- Reproducible Pipelines (DVC)
 
-pip install -r requirements.txt
+---
+
+# Project Architecture
+
+```
+                    Bank Dataset
+                         │
+                         ▼
+              Great Expectations
+               Data Validation
+                         │
+                         ▼
+               Feature Engineering
+                         │
+                         ▼
+               Model Training (RF)
+                         │
+        ┌────────────────┴────────────────┐
+        ▼                                 ▼
+     MLflow                       Model Artifacts
+ Experiment Tracking          model.pkl + metadata
+        │                                 │
+        └────────────────┬────────────────┘
+                         ▼
+                    FastAPI Service
+                         │
+          ┌──────────────┼──────────────┐
+          ▼              ▼              ▼
+      Swagger UI    Prometheus      Predictions
+                         │
+                         ▼
+                     Grafana
+                         │
+                         ▼
+                 Evidently Reports
+                         │
+                         ▼
+                  OpenLineage Events
 ```
 
-## Run Pipeline
-### 1) Data Validation
+---
+
+# Technologies Used
+
+| Category | Tool |
+|----------|------|
+| Language | Python 3.12 |
+| Machine Learning | Scikit-learn |
+| Data Processing | Pandas, NumPy |
+| Validation | Great Expectations |
+| Experiment Tracking | MLflow |
+| API | FastAPI |
+| API Documentation | Swagger UI |
+| Containerization | Docker |
+| Orchestration | Docker Compose |
+| Monitoring | Prometheus |
+| Dashboard | Grafana |
+| Drift Detection | Evidently AI |
+| Data Lineage | OpenLineage |
+| Version Control | Git |
+| CI/CD | GitHub Actions |
+| Pipeline | DVC |
+
+---
+
+# Repository Structure
+
+```
+.
+├── app.py
+├── model_training.py
+├── predict.py
+├── data_validation.py
+├── feature_engineering.py
+├── openlineage_tracking.py
+├── evidently_monitoring.py
+├── Dockerfile
+├── docker-compose.yml
+├── prometheus.yml
+├── requirements.txt
+├── requirements-api.txt
+├── model.pkl
+├── bank.csv
+├── docs/
+├── monitoring/
+├── tests/
+├── mlruns/
+├── artifacts/
+└── README.md
+```
+
+---
+
+# Features Implemented
+
+## Data Validation
+
+✔ Great Expectations
+
+Validates:
+
+- Missing values
+- Column names
+- Data types
+- Duplicate records
+- Null percentages
+- Dataset integrity
+
+Run
+
 ```bash
 python data_validation.py
 ```
 
-### 2) Model Training
+---
+
+## Feature Engineering
+
+Includes
+
+- Missing value handling
+- Encoding
+- Scaling
+- Pipeline creation
+
+---
+
+## Model Training
+
+Algorithm
+
+- Random Forest Classifier
+
+Artifacts generated
+
+```
+model.pkl
+model_metadata.json
+columns_info.json
+```
+
+Run
+
 ```bash
 python model_training.py
 ```
 
-Artifacts produced:
-- `model.pkl`
-- `model_metadata.json`
-- `columns_info.json`
+---
 
-### 3) Start API
+## MLflow Experiment Tracking
+
+Tracks
+
+- Parameters
+- Metrics
+- Accuracy
+- Precision
+- Recall
+- F1 Score
+- Model artifacts
+
+Start UI
+
 ```bash
-uvicorn app:app --host 0.0.0.0 --port 8000
+mlflow ui
 ```
 
-## API Endpoints
-- `GET /` basic service status
-- `GET /healthz` readiness with model load state
-- `POST /predict` model inference
-- `GET /metrics` Prometheus metrics
-- `GET /docs` Swagger UI
+Open
 
-### Sample Prediction Request
-```json
-{
-  "age": 35,
-  "job": "admin.",
-  "marital": "married",
-  "education": "university.degree",
-  "default": "no",
-  "housing": "yes",
-  "loan": "no",
-  "contact": "cellular",
-  "month": "may",
-  "day_of_week": "mon",
-  "campaign": 3,
-  "pdays": 999,
-  "previous": 0,
-  "poutcome": "nonexistent",
-  "emp.var.rate": 1.1,
-  "cons.price.idx": 93.994,
-  "cons.conf.idx": -36.4,
-  "euribor3m": 4.855,
-  "nr.employed": 5191.0
-}
 ```
+http://localhost:5000
+```
+
+---
+
+## FastAPI Deployment
+
+Run
+
+```bash
+uvicorn app:app --reload
+```
+
+Available Endpoints
+
+| Endpoint | Purpose |
+|-----------|----------|
+| / | Home |
+| /healthz | Health Check |
+| /predict | Prediction |
+| /metrics | Prometheus Metrics |
+| /docs | Swagger Documentation |
+
+Swagger
+
+```
+http://localhost:8000/docs
+```
+
+---
 
 ## Docker
-### Build and Run API Container
+
+Build
+
 ```bash
 docker build -t bank-prediction-api:v1 .
-docker run -d -p 8000:8000 --name bank-api bank-prediction-api:v1
 ```
 
-### Verify
+Run
+
 ```bash
-curl http://localhost:8000/healthz
-curl http://localhost:8000/docs
+docker run -d -p 8000:8000 bank-prediction-api:v1
 ```
 
-## Monitoring Stack
+Health Check
+
+```
+http://localhost:8000/healthz
+```
+
+---
+
+## Docker Compose
+
+Launch complete monitoring stack
+
 ```bash
-docker compose up -d
+docker compose up
 ```
 
-Services:
-- API: `http://localhost:8000`
-- Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3001`
+Services
 
-## Data Drift Report (Evidently)
+| Service | URL |
+|----------|-----|
+| FastAPI | http://localhost:8000 |
+| Prometheus | http://localhost:9090 |
+| Grafana | http://localhost:3001 |
+
+---
+
+## Prometheus
+
+Metrics endpoint
+
+```
+http://localhost:8000/metrics
+```
+
+Collects
+
+- API requests
+- Latency
+- Error counts
+
+---
+
+## Grafana
+
+Dashboard
+
+```
+http://localhost:3001
+```
+
+Can visualize
+
+- Request rate
+- API latency
+- Error rate
+- Custom Prometheus metrics
+
+---
+
+## Evidently AI
+
+Generate Data Drift Report
+
 ```bash
 python evidently_monitoring.py
 ```
-Output: `reports/data_drift_report.html`
 
-## OpenLineage (Optional)
-Set lineage backend URL and run:
+Output
+
+```
+reports/data_drift_report.html
+```
+
+---
+
+## OpenLineage
+
+Tracks
+
+- Pipeline execution
+- Dataset lineage
+- Model lineage
+- Metadata
+
+Run
+
 ```bash
-# Example
-set OPENLINEAGE_URL=http://localhost:5000
 python openlineage_tracking.py
 ```
 
-## AWS EC2 Deployment Notes
-- Build image on EC2 and expose port `8000`.
-- Keep security group limited to trusted IPs where possible.
-- Use `/healthz` for load balancer health checks.
-- Persist logs and model artifacts outside ephemeral containers in production.
+---
 
-## CI
-GitHub Actions workflow runs:
-1. Dependency install
-2. Data validation
-3. Model training
-4. API smoke tests
-5. Docker build
+## GitHub Actions
+
+Automatically performs
+
+- Dependency installation
+- Data validation
+- Model training
+- API smoke testing
+- Docker build
+
+Workflow
+
+```
+.github/workflows/ci.yml
+```
+
+---
+
+# Running the Complete Pipeline
+
+### Step 1
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Step 2
+
+Validate data
+
+```bash
+python data_validation.py
+```
+
+### Step 3
+
+Train model
+
+```bash
+python model_training.py
+```
+
+### Step 4
+
+View experiments
+
+```bash
+mlflow ui
+```
+
+### Step 5
+
+Run API
+
+```bash
+uvicorn app:app --reload
+```
+
+### Step 6
+
+Test API
+
+```
+http://localhost:8000/docs
+```
+
+### Step 7
+
+Run Docker
+
+```bash
+docker build -t bank-prediction-api:v1 .
+docker run -p 8000:8000 bank-prediction-api:v1
+```
+
+### Step 8
+
+Launch Monitoring
+
+```bash
+docker compose up
+```
+
+---
+
+# Future Improvements
+
+- Kubernetes Deployment
+- AWS ECS/EKS Deployment
+- Model Registry
+- Automated Retraining
+- Feature Store
+- CI/CD to AWS
+- Canary Deployments
+
+---
+
+# Author
+
+Anish Jain
+
+MLOps Assignment
+
+Indian School of Business
