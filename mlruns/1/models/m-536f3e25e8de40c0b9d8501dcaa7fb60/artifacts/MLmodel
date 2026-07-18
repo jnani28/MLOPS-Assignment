@@ -1,0 +1,24 @@
+artifact_path: file:C:/Users/DLP-I516-75/OneDrive - Indian School of Business/Term
+  2/CT_bharani Sir/Assignment/mlruns/1/models/m-536f3e25e8de40c0b9d8501dcaa7fb60/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.12.10
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.0
+    skops_trusted_types: null
+mlflow_version: 3.14.0
+model_id: m-536f3e25e8de40c0b9d8501dcaa7fb60
+model_size_bytes: 11323026
+model_uuid: m-536f3e25e8de40c0b9d8501dcaa7fb60
+prompts: null
+run_id: dd7a7ddffa6e44969f21cbc3299bb649
+utc_time_created: '2026-07-18 08:30:19.335380'

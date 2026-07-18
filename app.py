@@ -1,30 +1,47 @@
 """
-Bank Marketing Campaign - Term Deposit Prediction API
-FastAPI application for serving the trained ML model.
+Bank Marketing Campaign - Term Deposit Prediction API.
 
 Endpoints:
     GET  /         - Health check
+    GET  /healthz  - Readiness and model load status
+    GET  /metrics  - Prometheus metrics
     POST /predict  - Single prediction
 """
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+import logging
+from pathlib import Path
+
 import joblib
 import pandas as pd
-import numpy as np
-import os
+from fastapi import FastAPI, HTTPException, Response
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
+from pydantic import BaseModel, Field
 
 # ============================================================
 # Load Model
 # ============================================================
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pkl")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s",
+)
+logger = logging.getLogger(__name__)
 
-try:
-    model_pipeline = joblib.load(MODEL_PATH)
-    print(f"Model loaded successfully from {MODEL_PATH}")
-except Exception as e:
-    print(f"Error loading model: {e}")
-    model_pipeline = None
+MODEL_PATH = Path(__file__).resolve().parent / "model.pkl"
+model_pipeline = None
+
+prediction_counter = Counter("prediction_requests_total", "Number of prediction requests")
+prediction_failures_counter = Counter("prediction_failures_total", "Number of failed prediction requests")
+prediction_latency = Histogram("prediction_latency_seconds", "Latency of prediction endpoint")
+
+
+def load_model() -> None:
+    global model_pipeline
+    try:
+        model_pipeline = joblib.load(MODEL_PATH)
+        logger.info("Model loaded successfully from %s", MODEL_PATH)
+    except Exception as exc:
+        model_pipeline = None
+        logger.exception("Error loading model from %s: %s", MODEL_PATH, exc)
 
 # ============================================================
 # FastAPI App
@@ -34,6 +51,11 @@ app = FastAPI(
     description="Predicts whether a bank client will subscribe to a term deposit based on marketing campaign data.",
     version="1.0.0"
 )
+
+
+@app.on_event("startup")
+def startup_event() -> None:
+    load_model()
 
 # ============================================================
 # Request/Response Models
@@ -50,7 +72,6 @@ class CustomerInput(BaseModel):
     contact: str = Field(..., example="cellular", description="Contact communication type")
     month: str = Field(..., example="may", description="Last contact month")
     day_of_week: str = Field(..., example="mon", description="Last contact day of week")
-    duration: int = Field(..., example=200, description="Last contact duration in seconds")
     campaign: int = Field(..., example=2, description="Number of contacts during this campaign")
     pdays: int = Field(..., example=999, description="Days since last contact from previous campaign")
     previous: int = Field(..., example=0, description="Number of contacts before this campaign")
@@ -86,6 +107,21 @@ def health_check():
     }
 
 
+@app.get("/healthz")
+def readiness_check():
+    status = "ready" if model_pipeline is not None else "not_ready"
+    return {
+        "status": status,
+        "model_loaded": model_pipeline is not None,
+        "model_path": str(MODEL_PATH),
+    }
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
 @app.post("/predict", response_model=PredictionResponse)
 def predict(customer: CustomerInput):
     """
@@ -95,6 +131,8 @@ def predict(customer: CustomerInput):
     """
     if model_pipeline is None:
         raise HTTPException(status_code=503, detail="Model not loaded. Please check model.pkl file.")
+
+    prediction_counter.inc()
 
     try:
         # Convert input to DataFrame with correct column names
@@ -109,7 +147,6 @@ def predict(customer: CustomerInput):
             "contact": [customer.contact],
             "month": [customer.month],
             "day_of_week": [customer.day_of_week],
-            "duration": [customer.duration],
             "campaign": [customer.campaign],
             "pdays": [customer.pdays],
             "previous": [customer.previous],
@@ -120,12 +157,12 @@ def predict(customer: CustomerInput):
             "euribor3m": [customer.euribor3m],
             "nr.employed": [customer.nr_employed],
         }
-        
+
         input_df = pd.DataFrame(input_data)
 
-        # Make prediction
-        prediction = model_pipeline.predict(input_df)[0]
-        probabilities = model_pipeline.predict_proba(input_df)[0]
+        with prediction_latency.time():
+            prediction = model_pipeline.predict(input_df)[0]
+            probabilities = model_pipeline.predict_proba(input_df)[0]
 
         pred_label = "yes" if prediction == 1 else "no"
         prob_yes = float(round(probabilities[1], 4))
@@ -146,8 +183,10 @@ def predict(customer: CustomerInput):
             risk_level=risk
         )
 
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Prediction error: {str(e)}")
+    except Exception as exc:
+        prediction_failures_counter.inc()
+        logger.exception("Prediction error: %s", exc)
+        raise HTTPException(status_code=400, detail=f"Prediction error: {str(exc)}")
 
 
 # ============================================================

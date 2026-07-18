@@ -1,6 +1,6 @@
 stages:
   validate:
-    cmd: .venv\Scripts\python data_validation.py
+    cmd: python data_validation.py
     deps:
       - data_validation.py
       - data_raw/bank-additional.csv
@@ -8,7 +8,7 @@ stages:
       - validation_passed.txt:
           cache: false
   train:
-    cmd: .venv\Scripts\python model_training.py
+    cmd: python model_training.py
     deps:
       - model_training.py
       - data_raw/bank-additional.csv

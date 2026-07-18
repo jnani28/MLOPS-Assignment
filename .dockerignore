@@ -1,0 +1,14 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.ipynb
+mlruns
+mlflow.db
+data_raw
+*.dvc
+.dvc
+.env
