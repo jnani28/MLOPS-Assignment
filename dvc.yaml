@@ -1,12 +1,23 @@
 stages:
+  validate:
+    cmd: .venv\Scripts\python data_validation.py
+    deps:
+      - data_validation.py
+      - data_raw/bank-additional.csv
+    outs:
+      - validation_passed.txt:
+          cache: false
   train:
-    cmd: python model_training.py
+    cmd: .venv\Scripts\python model_training.py
     deps:
       - model_training.py
       - data_raw/bank-additional.csv
+      - validation_passed.txt
     outs:
-      - model.pkl
-      - columns_info.json
+      - model.pkl:
+          cache: false
+      - columns_info.json:
+          cache: false
     metrics:
       - model_metadata.json:
           cache: false

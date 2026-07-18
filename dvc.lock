@@ -1,0 +1,46 @@
+schema: '2.0'
+stages:
+  validate:
+    cmd: .venv\Scripts\python data_validation.py
+    deps:
+    - path: data_raw/bank-additional.csv
+      hash: md5
+      md5: 0e29c0d99c654bbe83c42097c97743ed
+      size: 515246
+    - path: data_validation.py
+      hash: md5
+      md5: e54139e38cb361de9c36052aecc4567c
+      size: 1674
+    outs:
+    - path: validation_passed.txt
+      hash: md5
+      md5: 269f3d1562cbd15624e7d2c4b10122e3
+      size: 6
+  train:
+    cmd: .venv\Scripts\python model_training.py
+    deps:
+    - path: data_raw/bank-additional.csv
+      hash: md5
+      md5: 0e29c0d99c654bbe83c42097c97743ed
+      size: 515246
+    - path: model_training.py
+      hash: md5
+      md5: 6246cf86574de3626088fccbcefcbdf7
+      size: 9501
+    - path: validation_passed.txt
+      hash: md5
+      md5: 269f3d1562cbd15624e7d2c4b10122e3
+      size: 6
+    outs:
+    - path: columns_info.json
+      hash: md5
+      md5: 0316d4fc701a1c0bf7f653ac1930218d
+      size: 1982
+    - path: model.pkl
+      hash: md5
+      md5: c3fa77c4057b9910f58667ced3f78837
+      size: 6740034
+    - path: model_metadata.json
+      hash: md5
+      md5: fbd51c7eccbe88b54d07d26fe7add6d4
+      size: 1058

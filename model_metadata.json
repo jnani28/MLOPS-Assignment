@@ -22,11 +22,41 @@
     "euribor3m",
     "nr.employed"
   ],
+  "numeric_features": [
+    "age",
+    "duration",
+    "campaign",
+    "pdays",
+    "previous",
+    "emp.var.rate",
+    "cons.price.idx",
+    "cons.conf.idx",
+    "euribor3m",
+    "nr.employed"
+  ],
+  "categorical_features": [
+    "job",
+    "marital",
+    "education",
+    "default",
+    "housing",
+    "loan",
+    "contact",
+    "month",
+    "day_of_week",
+    "poutcome"
+  ],
+  "target_classes": [
+    "no",
+    "yes"
+  ],
   "metrics": {
     "accuracy": 0.8896,
     "precision": 0.4962,
     "recall": 0.7222,
     "f1_score": 0.5882,
     "roc_auc": 0.9425
-  }
+  },
+  "training_samples": 3295,
+  "test_samples": 824
 }
