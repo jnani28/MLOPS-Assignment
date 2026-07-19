@@ -1,85 +1,148 @@
-# 🏦 Bank Term Deposit Prediction - End-to-End MLOps Pipeline
+# 🏦 Bank Term Deposit Prediction – End-to-End MLOps Pipeline
 
-## Project Overview
+## Author
+**Anish Jain**
 
-This project predicts whether a bank customer will subscribe to a term deposit using Machine Learning while demonstrating a complete production-grade MLOps workflow.
+**Course:** Indian School of Business (ISB)
 
-Instead of only training a model, this repository covers the complete lifecycle:
-
-- Data Validation
-- Feature Engineering
-- Model Training
-- Experiment Tracking (MLflow)
-- REST API Deployment (FastAPI)
-- Containerization (Docker)
-- Monitoring (Prometheus + Grafana)
-- Data Drift Detection (Evidently)
-- Data Lineage (OpenLineage)
-- CI/CD (GitHub Actions)
-- Reproducible Pipelines (DVC)
+**Assignment:** End-to-End MLOps Pipeline with Docker & AWS Deployment
 
 ---
 
-# Project Architecture
+# Project Overview
 
-```
-                    Bank Dataset
-                         │
-                         ▼
-              Great Expectations
-               Data Validation
-                         │
-                         ▼
-               Feature Engineering
-                         │
-                         ▼
-               Model Training (RF)
-                         │
-        ┌────────────────┴────────────────┐
-        ▼                                 ▼
-     MLflow                       Model Artifacts
- Experiment Tracking          model.pkl + metadata
-        │                                 │
-        └────────────────┬────────────────┘
-                         ▼
-                    FastAPI Service
-                         │
-          ┌──────────────┼──────────────┐
-          ▼              ▼              ▼
-      Swagger UI    Prometheus      Predictions
-                         │
-                         ▼
-                     Grafana
-                         │
-                         ▼
-                 Evidently Reports
-                         │
-                         ▼
-                  OpenLineage Events
-```
+Banks spend significant resources contacting customers during marketing campaigns. Many customers contacted never subscribe to a term deposit, resulting in unnecessary operational costs.
+
+This project develops an end-to-end MLOps pipeline that predicts whether a customer will subscribe to a term deposit while demonstrating industry-standard machine learning deployment practices.
+
+The project intentionally separates **Model Development (Training Environment)** from **Model Serving (Production Environment)** to simulate a real-world MLOps workflow.
 
 ---
 
-# Technologies Used
+# Training Environment (Local Development)
 
-| Category | Tool |
-|----------|------|
-| Language | Python 3.12 |
-| Machine Learning | Scikit-learn |
+The local environment is responsible for building, validating, tracking, and packaging the machine learning model.
+
+```
+                 Raw Bank Dataset
+                        │
+                        ▼
+           Great Expectations
+            Data Validation
+                        │
+                        ▼
+            Feature Engineering
+                        │
+                        ▼
+      Random Forest Model Training
+                        │
+          ┌─────────────┴─────────────┐
+          ▼                           ▼
+     MLflow Tracking            Model Artifacts
+                              (model.pkl, metadata)
+          │                           │
+          └─────────────┬─────────────┘
+                        ▼
+                 OpenLineage Events
+```
+
+### Components
+
+| Component | Technology |
+|------------|------------|
+| Programming Language | Python 3.12 |
 | Data Processing | Pandas, NumPy |
-| Validation | Great Expectations |
+| Machine Learning | Scikit-learn |
+| Data Validation | Great Expectations |
 | Experiment Tracking | MLflow |
-| API | FastAPI |
-| API Documentation | Swagger UI |
-| Containerization | Docker |
-| Orchestration | Docker Compose |
-| Monitoring | Prometheus |
-| Dashboard | Grafana |
-| Drift Detection | Evidently AI |
+| Pipeline Versioning | DVC |
 | Data Lineage | OpenLineage |
-| Version Control | Git |
-| CI/CD | GitHub Actions |
-| Pipeline | DVC |
+| Drift Detection | Evidently AI |
+| Version Control | Git + GitHub |
+
+---
+
+# Production Environment (AWS)
+
+Only the inference service is deployed to AWS.
+
+The training pipeline remains local, while AWS hosts the prediction API.
+
+```
+                 GitHub Repository
+                        │
+                        ▼
+                   AWS EC2 Instance
+                        │
+                        ▼
+                 Docker Container
+                        │
+                        ▼
+                  FastAPI Application
+                        │
+       ┌────────────────┼────────────────┐
+       ▼                ▼                ▼
+   Swagger UI      Health Check      Predictions
+     (/docs)         (/healthz)       (/predict)
+```
+
+### Production Stack
+
+| Component | Technology |
+|------------|------------|
+| Cloud Platform | AWS EC2 |
+| Containerization | Docker |
+| REST API | FastAPI |
+| API Documentation | Swagger UI |
+| Health Monitoring | Health Endpoint |
+
+---
+
+# Complete Solution Architecture
+
+```
+                      LOCAL DEVELOPMENT
+
+                Raw Bank Dataset
+                        │
+                        ▼
+            Great Expectations Validation
+                        │
+                        ▼
+              Feature Engineering
+                        │
+                        ▼
+         Random Forest Model Training
+                        │
+                        ▼
+            MLflow Experiment Tracking
+                        │
+                        ▼
+        model.pkl + metadata + schema
+                        │
+                        ▼
+              Push to GitHub Repository
+
+────────────────────────────────────────────────────────────
+
+                      PRODUCTION (AWS)
+
+                 GitHub Repository
+                        │
+                        ▼
+                  Amazon EC2 Instance
+                        │
+                        ▼
+                 Docker Container
+                        │
+                        ▼
+                  FastAPI Application
+                        │
+      ┌─────────────────┼─────────────────┐
+      ▼                 ▼                 ▼
+  /healthz          /predict          Swagger UI
+                                       /docs
+```
 
 ---
 
@@ -89,9 +152,9 @@ Instead of only training a model, this repository covers the complete lifecycle:
 .
 ├── app.py
 ├── model_training.py
-├── predict.py
-├── data_validation.py
 ├── feature_engineering.py
+├── data_validation.py
+├── predict.py
 ├── openlineage_tracking.py
 ├── evidently_monitoring.py
 ├── Dockerfile
@@ -100,30 +163,33 @@ Instead of only training a model, this repository covers the complete lifecycle:
 ├── requirements.txt
 ├── requirements-api.txt
 ├── model.pkl
+├── model_metadata.json
+├── columns_info.json
 ├── bank.csv
-├── docs/
-├── monitoring/
-├── tests/
-├── mlruns/
 ├── artifacts/
+├── monitoring/
+├── reports/
+├── tests/
+├── docs/
+├── mlruns/
 └── README.md
 ```
 
 ---
 
-# Features Implemented
+# MLOps Components
 
 ## Data Validation
 
-✔ Great Expectations
+Implemented using **Great Expectations**.
 
-Validates:
+Validation checks include:
 
 - Missing values
+- Duplicate records
+- Schema validation
 - Column names
 - Data types
-- Duplicate records
-- Null percentages
 - Dataset integrity
 
 Run
@@ -136,10 +202,10 @@ python data_validation.py
 
 ## Feature Engineering
 
-Includes
+Pipeline performs
 
 - Missing value handling
-- Encoding
+- Feature encoding
 - Scaling
 - Pipeline creation
 
@@ -147,11 +213,11 @@ Includes
 
 ## Model Training
 
-Algorithm
+Algorithm used
 
 - Random Forest Classifier
 
-Artifacts generated
+Generated artifacts
 
 ```
 model.pkl
@@ -167,19 +233,18 @@ python model_training.py
 
 ---
 
-## MLflow Experiment Tracking
+## MLflow
 
 Tracks
 
 - Parameters
-- Metrics
 - Accuracy
 - Precision
 - Recall
 - F1 Score
 - Model artifacts
 
-Start UI
+Launch
 
 ```bash
 mlflow ui
@@ -193,9 +258,9 @@ http://localhost:5000
 
 ---
 
-## FastAPI Deployment
+## FastAPI
 
-Run
+Launch
 
 ```bash
 uvicorn app:app --reload
@@ -203,13 +268,13 @@ uvicorn app:app --reload
 
 Available Endpoints
 
-| Endpoint | Purpose |
-|-----------|----------|
-| / | Home |
-| /healthz | Health Check |
-| /predict | Prediction |
-| /metrics | Prometheus Metrics |
-| /docs | Swagger Documentation |
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| GET | / | Home |
+| GET | /healthz | Health Check |
+| POST | /predict | Prediction |
+| GET | /metrics | Prometheus Metrics |
+| GET | /docs | Swagger Documentation |
 
 Swagger
 
@@ -233,23 +298,36 @@ Run
 docker run -d -p 8000:8000 bank-prediction-api:v1
 ```
 
-Health Check
+---
+
+## AWS Deployment
+
+Deployment steps
+
+1. Launch Amazon Linux EC2
+2. Install Docker
+3. Clone GitHub repository
+4. Build Docker image
+5. Run Docker container
+6. Access FastAPI
+
+Example
 
 ```
-http://localhost:8000/healthz
+http://<EC2-PUBLIC-IP>:8000/docs
 ```
 
 ---
 
 ## Docker Compose
 
-Launch complete monitoring stack
+Launch Monitoring Stack
 
 ```bash
 docker compose up
 ```
 
-Services
+Available Services
 
 | Service | URL |
 |----------|-----|
@@ -261,17 +339,17 @@ Services
 
 ## Prometheus
 
-Metrics endpoint
+Collects
+
+- API Requests
+- Response Latency
+- Error Counts
+
+Metrics Endpoint
 
 ```
 http://localhost:8000/metrics
 ```
-
-Collects
-
-- API requests
-- Latency
-- Error counts
 
 ---
 
@@ -283,18 +361,18 @@ Dashboard
 http://localhost:3001
 ```
 
-Can visualize
+Visualizes
 
-- Request rate
-- API latency
-- Error rate
-- Custom Prometheus metrics
+- Request Rate
+- API Latency
+- Error Rate
+- Prometheus Metrics
 
 ---
 
 ## Evidently AI
 
-Generate Data Drift Report
+Generate Drift Report
 
 ```bash
 python evidently_monitoring.py
@@ -315,7 +393,6 @@ Tracks
 - Pipeline execution
 - Dataset lineage
 - Model lineage
-- Metadata
 
 Run
 
@@ -327,7 +404,7 @@ python openlineage_tracking.py
 
 ## GitHub Actions
 
-Automatically performs
+CI Pipeline automatically performs
 
 - Dependency installation
 - Data validation
@@ -343,91 +420,146 @@ Workflow
 
 ---
 
-# Running the Complete Pipeline
+# Running the Project
 
-### Step 1
-
-Install dependencies
+## 1. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 2
-
-Validate data
+## 2. Validate Data
 
 ```bash
 python data_validation.py
 ```
 
-### Step 3
-
-Train model
+## 3. Train Model
 
 ```bash
 python model_training.py
 ```
 
-### Step 4
-
-View experiments
+## 4. Launch MLflow
 
 ```bash
 mlflow ui
 ```
 
-### Step 5
-
-Run API
+## 5. Start FastAPI
 
 ```bash
 uvicorn app:app --reload
 ```
 
-### Step 6
+## 6. Build Docker
 
-Test API
+```bash
+docker build -t bank-prediction-api:v1 .
+```
+
+## 7. Run Docker
+
+```bash
+docker run -p 8000:8000 bank-prediction-api:v1
+```
+
+## 8. Open Swagger
 
 ```
 http://localhost:8000/docs
 ```
 
-### Step 7
+---
 
-Run Docker
+# Sample Prediction Request
 
-```bash
-docker build -t bank-prediction-api:v1 .
-docker run -p 8000:8000 bank-prediction-api:v1
-```
-
-### Step 8
-
-Launch Monitoring
-
-```bash
-docker compose up
+```json
+{
+  "age": 35,
+  "job": "management",
+  "marital": "married",
+  "education": "tertiary",
+  "default": "no",
+  "balance": 2500,
+  "housing": "yes",
+  "loan": "no",
+  "contact": "cellular",
+  "day": 15,
+  "month": "may",
+  "duration": 180,
+  "campaign": 2,
+  "pdays": -1,
+  "previous": 0,
+  "poutcome": "unknown"
+}
 ```
 
 ---
 
-# Future Improvements
+# Sample Prediction Response
+
+```json
+{
+  "prediction": "yes",
+  "probability_yes": 0.91,
+  "probability_no": 0.09,
+  "risk_level": "HIGH - Very likely to subscribe"
+}
+```
+
+---
+
+# Assignment Deliverables
+
+✔ Machine Learning Model
+
+✔ Data Validation
+
+✔ Feature Engineering
+
+✔ MLflow Experiment Tracking
+
+✔ Docker Containerization
+
+✔ FastAPI REST API
+
+✔ Swagger Documentation
+
+✔ AWS EC2 Deployment
+
+✔ Health Check Endpoint
+
+✔ Real-Time Inference
+
+✔ Prometheus Monitoring
+
+✔ Grafana Dashboard
+
+✔ Evidently Drift Detection
+
+✔ OpenLineage Integration
+
+✔ GitHub Actions CI
+
+---
+
+# Future Enhancements
 
 - Kubernetes Deployment
 - AWS ECS/EKS Deployment
-- Model Registry
-- Automated Retraining
-- Feature Store
-- CI/CD to AWS
-- Canary Deployments
+- MLflow Model Registry
+- Automated Model Retraining
+- Feature Store Integration
+- CI/CD Deployment to AWS
+- Canary Model Deployment
 
 ---
 
 # Author
 
-Anish Jain
-
-MLOps Assignment
+**Anish Jain**
 
 Indian School of Business
+
+End-to-End MLOps Assignment
