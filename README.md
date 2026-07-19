@@ -477,21 +477,24 @@ http://localhost:8000/docs
 ```json
 {
   "age": 35,
-  "job": "management",
+  "job": "admin.",
   "marital": "married",
-  "education": "tertiary",
+  "education": "university.degree",
   "default": "no",
-  "balance": 2500,
   "housing": "yes",
   "loan": "no",
   "contact": "cellular",
-  "day": 15,
   "month": "may",
-  "duration": 180,
+  "day_of_week": "mon",
   "campaign": 2,
-  "pdays": -1,
+  "pdays": 999,
   "previous": 0,
-  "poutcome": "unknown"
+  "poutcome": "nonexistent",
+  "emp.var.rate": -1.8,
+  "cons.price.idx": 92.893,
+  "cons.conf.idx": -46.2,
+  "euribor3m": 1.313,
+  "nr.employed": 5099.1
 }
 ```
 
